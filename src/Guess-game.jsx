@@ -137,7 +137,7 @@ export default ({ wordSize }) => {
                 guessLetter();
             }
         }}>
-            <label htmlFor="guess">Guess A Letter ({wordList.length} possible guesses)</label>
+            <label htmlFor="guess">Guess a letter ({wordList.length} possible answers)</label>
             <input type="text"
                 id='guess'
                 name='guess'
