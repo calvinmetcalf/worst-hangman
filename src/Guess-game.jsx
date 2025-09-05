@@ -76,7 +76,7 @@ export default ({ wordSize }) => {
         const func = async () => {
             if (!wordList && !loadingWordlist) {
                 setLoadingWordList(true);
-                const resp = await fetch(`/words-${wordSize}.json`);
+                const resp = await fetch(`words-${wordSize}.json`);
                 if (!resp.ok) {
                     setLoadingError(resp.statusText);
                     setLoadingWordList(false);
