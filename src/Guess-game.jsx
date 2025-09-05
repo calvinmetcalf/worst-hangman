@@ -39,7 +39,6 @@ const updateGuess = (letter, excluded, included, wordList, pattern) => {
     let maxSize = -Infinity;
     let maxPattern, maxList;
     for (const [pattern, list] of patterns) {
-        console.log(pattern, list.length)
         if (list.length > maxSize) {
             maxPattern = pattern;
             maxList = list;
