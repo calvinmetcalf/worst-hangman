@@ -16,6 +16,27 @@ const findOccences = (word, letter) => {
         pos = thisPos + 1;
     }
 }
+const countFreq = (list, included) => {
+    if (!list) {
+        return ''
+    }
+    const items = new Map();
+    for (const word of list) {
+        const letters = new Set(Array.from(word));
+        for (const letter of letters) {
+            if (included.includes(letter)) {
+                continue;
+            }
+            if (!items.has(letter)) {
+                items.set(letter, 0);
+            }
+            items.set(letter, items.get(letter) + 1);
+        }
+    }
+    const arr = Array.from(items);
+    arr.sort((a, b) => b[1] - a[1]);
+    return arr.map(item => item[0]).join('');
+}
 const updateGuess = (letter, excluded, included, wordList, pattern) => {
     if (!letter) { throw new Error('no letter!') }
     const patterns = new Map();
@@ -61,7 +82,7 @@ const updateGuess = (letter, excluded, included, wordList, pattern) => {
     return [excluded, included, maxList, newPattern]
 }
 
-export default ({ wordSize }) => {
+export default ({ wordSize, mode }) => {
     const [wordList, setWordList] = useState(false);
     const [loadingWordlist, setLoadingWordList] = useState(false);
     const [loadingError, setLoadingError] = useState(false);
@@ -72,6 +93,7 @@ export default ({ wordSize }) => {
     const [message, setMessage] = useState(false);
     const [currentGuess, setCurrentGuess] = useState('');
     const [valid, setValid] = useState(false);
+    const [showHelp, setShowHelp] = useState(false)
     useEffect(() => {
         const func = async () => {
             if (!wordList && !loadingWordlist) {
@@ -118,17 +140,34 @@ export default ({ wordSize }) => {
         setIncluded(newIncluded);
         setWordList(newWordlist);
         setPattern(newPattern);
-        if (newPattern.indexOf('_') === -1) {
-            setDone(true)
+        if (mode === 'classic') {
+            if (newPattern.indexOf('_') === -1) {
+                setDone(true)
+            }
+        } else if (mode === 'fast') {
+            if (newWordlist.length === 1) {
+                setDone(true)
+            }
         }
         setCurrentGuess('');
         setValid(false)
+    }
+    let doneMessage;
+    let doneWord;
+    if (done) {
+        if (mode === 'classic') {
+            doneWord = pattern;
+            doneMessage = ` Success, only ${excluded.length + included.length} guesses!`
+        } else if (mode === 'fast') {
+            doneWord = wordList[0]
+            doneMessage = ` Success, only ${excluded.length + included.length} guesses to box me in!`
+        }
     }
     return <div>
         <h1 style={{
             letterSpacing: '1px',
             fontSize: '3em'
-        }}>{pattern}{done ? '🎉' : ''}</h1>
+        }}>{done ? doneWord : pattern}{done ? '🎉' : ''}</h1>
         <p>guesses: <>{excluded.map(item => <span style={{ color: 'red' }} key={item}>{item}</span>)}</><>{included.map(item => <span style={{ color: 'green' }} key={item}>{item}</span>)}</></p>
 
         {!done && <form onSubmit={(e) => {
@@ -159,8 +198,11 @@ export default ({ wordSize }) => {
             <input type='submit' disabled={!valid} onClick={guessLetter} value='Submit Guess' />
             {message && <div><p>{message}</p></div>}
         </form>}
+        {!done && <button onClick={() => setShowHelp(!showHelp)}>{showHelp ? 'Hide Help' : 'Show Help'}</button>}
+        {(!done && showHelp) && (wordList.length < 15 ? <div>{wordList.map(item => <span key={item}>{item},</span>)}</div> : <div>Please narrow down more</div>)}
+        <div>{(!done && showHelp) && countFreq(wordList, included)}</div>
         {done && <div>
-            Success, only {excluded.length + included.length} guesses!
+            {doneMessage}
         </div>}
     </div >
 }
